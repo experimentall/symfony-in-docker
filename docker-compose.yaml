@@ -1,0 +1,55 @@
+version: "3.8"
+
+services:
+
+  php:
+    image: apache-php8:v1
+    container_name: apache-php8
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    depends_on:
+      - pgsql
+      - mysql
+    volumes:
+      - ./:/var/www/html
+    ports:
+      - 80:80
+
+  pgsql:
+    image: postgres:15-alpine
+    container_name: pgsql
+    restart: always
+    environment:
+        POSTGRES_USER: test
+        POSTGRES_PASSWORD: test
+        POSTGRES_DB: app
+    ports:
+        - 5432:5432
+
+  mysql:
+    image: mysql
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - 9906:3306
+
+  adminer:
+    image: adminer:v1
+    container_name: adminer
+    build:
+      context: .
+      dockerfile: ./docker/adminer/Dockerfile
+    depends_on:
+      - pgsql
+      - mysql
+    restart: always
+    ports:
+      - 8080:8080
+    volumes:
+      - ./db:/var/www/html/db:rw
